@@ -143,17 +143,13 @@ The included dashboard (**`grafana/provisioning/dashboards/rag_metrics.json`**) 
 
 ⏱️ The dashboard auto-refreshes every **30 seconds** and defaults to the last **7 days** of data.
 
-### 🔧 Data Source
-- **Datasource:** Postgres  
-- **Database:** `rag_metrics`  
-- **Table:** `interactions`
-
-### 🔐 Access
-| URL | Username | Password |
-|------|-----------|-----------|
-| [http://localhost:3000](http://localhost:3000) | `admin` | `admin` |
 
 
+---
+### Demo
+
+
+[demo.webm](https://github.com/user-attachments/assets/b10f16c4-1d88-4022-a0cf-bdb95269780f)
 
 
 
