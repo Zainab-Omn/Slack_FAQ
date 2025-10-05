@@ -2,7 +2,7 @@
 
 A **Retrieval-Augmented Generation (RAG)** app built with **Streamlit**, **Qdrant**, and **Postgres** — all running via **Docker Compose**.  
 Users can ask questions, receive AI-generated answers  and provide feedback (👍 / 👎).  
-Feedback , latency , answer relveance , cost are stored in Postgres for analytics and monitoring with Grafana.
+Feedback , latency , answer relevance , cost are stored in Postgres for analytics and monitoring with Grafana.
 
 ✅ The project also includes a prebuilt Grafana dashboard, automatically provisioned when you start the stack — no manual setup required.
 
@@ -137,7 +137,7 @@ The included dashboard (**`grafana/provisioning/dashboards/rag_metrics.json`**) 
 | **Cumulative Cost (µ$) — hourly** | A time-series graph showing the cumulative token usage cost over time (in microdollars). |
 | **Spend per Hour (µ$)** | Shows the token spend per hour, helping track how usage scales with time. |
 | **Average Latency (ms)** | Displays average response latency across all user interactions. |
-| **Relevancy Distribution** | Pie chart of responses by relevancy label (e.g., “high”, “medium”, “low”, or “unknown”). |
+| **Relevancy Distribution** | Pie chart of responses by relevancy label . |
 | **Feedback Distribution** | Pie chart comparing counts of 👍 (helpful) and 👎 (not helpful) feedback. |
 | **Recent Interactions Table** | A live table showing the latest 50 queries with their question, answer, feedback, latency, token usage, cost, and relevancy explanation. |
 
