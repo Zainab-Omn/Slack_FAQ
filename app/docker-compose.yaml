@@ -1,0 +1,71 @@
+version: "3.9"
+
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant
+    ports:
+      - "6333:6333"   # REST
+      - "6334:6334"   # gRPC
+    volumes:
+      - ./qdrant_storage:/qdrant/storage
+
+  db:
+    image: postgres:16
+    container_name: rag_postgres
+    environment:
+      - POSTGRES_DB=rag_metrics
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  app:
+    build: .
+    container_name: rag_streamlit_app
+    ports:
+      - "8501:8501"
+    environment:
+      - QDRANT_HOST=http://qdrant
+      - QDRANT_PORT=6333
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=rag_metrics
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - HF_HOME=/models
+      - HUGGINGFACE_HUB_CACHE=/models
+      - TRANSFORMERS_CACHE=/models
+    volumes:
+      - models_cache:/models
+      - models_cache:/root/.cache/huggingface
+      - fastembed_cache:/tmp/fastembed_cache
+    depends_on:
+      - qdrant
+      - db
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      # optional: install plugins, enable anonymous, etc.
+      # GF_INSTALL_PLUGINS: grafana-clock-panel
+      # GF_AUTH_ANONYMOUS_ENABLED: "true"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - db
+
+volumes:
+  pgdata:
+  models_cache:
+  grafana-storage:
+  fastembed_cache:

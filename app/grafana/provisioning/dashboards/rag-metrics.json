@@ -1,0 +1,150 @@
+{
+  "title": "RAG Metrics",
+  "description": "Cost, latency, relevancy, and feedback from the interactions table",
+  "tags": ["RAG", "LLM", "Postgres"],
+  "schemaVersion": 39,
+  "version": 2,
+  "refresh": "30s",
+  "time": { "from": "now-7d", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "ds",
+        "type": "datasource",
+        "label": "Postgres DS",
+        "query": "postgres",
+        "current": {},
+        "hide": 0
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Cumulative Cost (µ$) — hourly",
+      "id": 1,
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 7 },
+      "datasource": "${ds}",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 2,
+          "displayName": "Cumulative cost (µ$)"
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "single" }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "time_series",
+          "rawSql": "WITH bounds AS (\n  SELECT\n    date_trunc('hour', $__timeFrom()::timestamp) AS start_ts,\n    date_trunc('hour', $__timeTo()::timestamp)   AS end_ts\n),\nseries AS (\n  SELECT generate_series(start_ts, end_ts, interval '1 hour')::timestamp AS time\n  FROM bounds\n),\nagg AS (\n  SELECT date_trunc('hour', created_at)::timestamp AS time, SUM(cost) AS cost\n  FROM interactions\n  WHERE $__timeFilter(created_at)\n  GROUP BY 1\n)\nSELECT\n  s.time,\n  SUM(COALESCE(a.cost, 0)) OVER (ORDER BY s.time) * 1e6 AS cumulative_cost_micro\nFROM series s\nLEFT JOIN agg a USING (time)\nORDER BY s.time;",
+          "timeColumn": "time",
+          "metricColumn": "cumulative_cost_micro"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Spend per hour (µ$)",
+      "id": 2,
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 7 },
+      "datasource": "${ds}",
+      "fieldConfig": {
+        "defaults": { "unit": "none", "decimals": 2, "displayName": "Cost per hour (µ$)" }
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "single" } },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "time_series",
+          "rawSql": "SELECT\n  date_trunc('hour', created_at) AS time,\n  SUM(cost) * 1e6 AS cost_micro\nFROM interactions\nWHERE $__timeFilter(created_at)\nGROUP BY 1\nORDER BY 1;",
+          "timeColumn": "time",
+          "metricColumn": "cost_micro"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Average Latency (ms)",
+      "id": 3,
+      "gridPos": { "x": 0, "y": 7, "w": 12, "h": 7 },
+      "datasource": "${ds}",
+      "fieldConfig": {
+        "defaults": { "unit": "ms", "decimals": 1, "displayName": "Avg latency (ms)" }
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "single" } },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "time_series",
+          "rawSql": "SELECT\n  date_trunc('hour', created_at) AS time,\n  AVG(latency_ms) AS avg_latency\nFROM interactions\nWHERE $__timeFilter(created_at)\nGROUP BY 1\nORDER BY 1;",
+          "timeColumn": "time",
+          "metricColumn": "avg_latency"
+        }
+      ]
+    },
+    {
+      "type": "piechart",
+      "title": "Relevancy distribution",
+      "id": 4,
+      "gridPos": { "x": 12, "y": 7, "w": 6, "h": 7 },
+      "datasource": "${ds}",
+      "fieldConfig": { "defaults": { "unit": "none" } },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "right" },
+        "reduceOptions": { "values": true, "calcs": ["lastNotNull"] }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawSql": "SELECT\n  COALESCE(relevancy,'UNKNOWN') AS label,\n  COUNT(*)::double precision AS value\nFROM interactions\nWHERE $__timeFilter(created_at)\nGROUP BY 1\nORDER BY 2 DESC;"
+        }
+      ]
+    },
+    {
+      "type": "piechart",
+      "title": "Feedback distribution",
+      "id": 5,
+      "gridPos": { "x": 18, "y": 7, "w": 6, "h": 7 },
+      "datasource": "${ds}",
+      "fieldConfig": { "defaults": { "unit": "none" } },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "right" },
+        "reduceOptions": { "values": true, "calcs": ["lastNotNull"] }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawSql": "SELECT\n  COALESCE(feedback,'none') AS label,\n  COUNT(*)::double precision AS value\nFROM interactions\nWHERE $__timeFilter(created_at)\nGROUP BY 1\nORDER BY 2 DESC;"
+        }
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Recent interactions",
+      "id": 6,
+      "gridPos": { "x": 0, "y": 14, "w": 24, "h": 10 },
+      "datasource": "${ds}",
+      "fieldConfig": {
+        "defaults": { "custom": { "align": "auto" } },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "cost" }, "properties": [ { "id": "unit", "value": "currencyUSD" }, { "id": "decimals", "value": 6 } ] },
+          { "matcher": { "id": "byName", "options": "latency_ms" }, "properties": [ { "id": "unit", "value": "ms" }, { "id": "decimals", "value": 1 } ] }
+        ]
+      },
+      "options": { "showHeader": true },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawSql": "SELECT\n  created_at,\n  LEFT(question, 120) AS question,\n  LEFT(answer, 160) AS answer,\n  feedback,\n  latency_ms,\n  tokens_in,\n  tokens_out,\n  cost,\n  relevancy,\n  COALESCE(relevancy_explanation,'') AS relevancy_explanation\nFROM interactions\nWHERE $__timeFilter(created_at)\nORDER BY created_at DESC\nLIMIT 50;"
+        }
+      ]
+    }
+  ]
+}

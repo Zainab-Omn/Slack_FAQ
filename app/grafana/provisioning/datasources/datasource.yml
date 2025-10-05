@@ -1,0 +1,16 @@
+apiVersion: 1
+
+datasources:
+  - name: Postgres (rag_metrics)
+    type: postgres
+    access: proxy
+    isDefault: true
+    editable: true
+    url: db:5432
+    user: postgres
+    secureJsonData:
+      password: postgres
+    jsonData:
+      database: rag_metrics
+      sslmode: "disable"
+      postgresVersion: 160
