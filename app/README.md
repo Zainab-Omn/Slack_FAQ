@@ -55,7 +55,7 @@ FAQ_RAG/
 ### 1️⃣ Clone the repository
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/Zainab-Omn/Slack_FAQ.git
 cd FAQ_RAG
 ```
 
