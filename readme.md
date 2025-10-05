@@ -175,5 +175,5 @@ A simple Streamlit-based interface for querying the RAG pipeline.
 [📂 Open the `app` folder →](app)
 
 <p align="center">
-  <img src="UI.png" alt="RAG App UI" width="500"/>
+  <img src="UI.PNG" alt="RAG App UI" width="500"/>
 </p>

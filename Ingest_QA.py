@@ -1,34 +1,4 @@
-#!/usr/bin/env python3
-"""
-Index Slack Q&A JSON into a Qdrant collection with text embeddings.
 
-Example:
-    python index_slack_qas.py \
-        --file Data/slack_QA.json \
-        --collection slack_QA \
-        --qdrant-url http://localhost:6333 \
-        --model jinaai/jina-embeddings-v2-base-en 
-
-Requirements:
-    pip install qdrant-client fastembed
-
-JSON format (per item):
-[
-  {
-    "channel": "some-channel",
-    "thread_ts": "1712345678.123456",
-    "qas": [
-      {
-        "asked_by": "alice",
-        "answered_by": "bob",
-        "question": "Q?",
-        "answer": "A."
-      }
-    ]
-  },
-  ...
-]
-"""
 from __future__ import annotations
 
 import argparse

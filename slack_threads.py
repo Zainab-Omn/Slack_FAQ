@@ -1,28 +1,6 @@
 """
 Utilities to rebuild Slack threads from an export and feed them to an LLM.
 
-Features
-- Walks a Slack standard export directory (folder per channel, JSON per day)
-- Reconstructs threads that may span multiple day-files
-- Returns a normalized structure: {channel, thread_ts, root, replies}
-- CLI to dump threads, or pipe each thread into your LLM Q&A extractor
-
-Usage
------
-# Rebuild threads and print summary
-python slack_threads.py /path/to/slack-export --list
-
-# Dump all threads to JSON (one file with array of threads)
-python slack_threads.py /path/to/slack-export --out threads.json
-
-# Run your LLM extractor (expects LLM/qa_extractor.py on import path)
-python slack_threads.py /path/to/slack-export --extract
-
-Notes
------
-- A thread's root may be missing from the export slice you have (e.g., only replies
-  appear). In that case, `root` will be None and replies will still be present.
-- Message ordering is based on numeric `ts` (timestamp) ascending.
 """
 from __future__ import annotations
 
